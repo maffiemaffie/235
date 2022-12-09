@@ -1,7 +1,7 @@
 /**
  * Contains lanes and a renderer to draw the Road to the screen
  */
-class Road {
+ class Road {
     constructor(isActive, lanes) {
         this.isActive = isActive; // road Player is on
         
@@ -56,6 +56,7 @@ class RoadRenderer {
         this.roadContainer.x = Globals.world.width * 0.5;
         this.roadContainer.y = Globals.world.height * 0.5;
         this.tiles = [];
+        this.markers = [];
 
         this.road.lanes.forEach(lane => {
             this.tiles[lane.x] = [];
@@ -70,6 +71,8 @@ class RoadRenderer {
                 this.tiles[lane.x].push(tile);
             }
         })
+
+        this.markers.push(new Sign(RoadMarker.Side.RIGHT, 4, Sign.Types.SPEED));
     }
 
     /**
@@ -116,6 +119,22 @@ class RoadRenderer {
             const _splines = [...this.road.spline.filter(s => s !== undefined)]; // sparse array 😃
 
             this._renderRecurse(_tiles, _splines, x0, y0);
+        });
+
+        this.markers.forEach(marker => {
+            this.roadContainer.addChild(marker.sprite);
+
+            const x = this.tiles[marker.lane * this.road.lanes.length][marker.mile].sprite.x * 
+            (this.road.lanes.length + 1) / this.road.lanes.length; // outside lane
+            
+            const y = this.tiles[marker.lane][marker.mile].sprite.y;
+            const dz = marker.mile - Globals.player.position.mile;
+
+            marker.sprite.position = { x: x, y: y };
+
+            const scale = Math.pow(0.5, dz);
+            marker.sprite.scale.x *= scale;
+            marker.sprite.scale.y *= scale;
         });
     }
 
@@ -211,5 +230,56 @@ class RenderTile {
         LEFT_EDGE:  0,
         CENTER:     1,
         RIGHT_EDGE: 2
+    }
+}
+
+class RoadMarker {
+    constructor(lane, mile) {
+        this.lane = lane;
+        this.mile = mile;
+    }
+
+    render() {}
+
+    static Side = {
+        RIGHT:  1,
+        LEFT:   0
+    }
+}
+
+class Sign extends RoadMarker {
+    constructor(lane, mile, type) {
+        super(lane, mile);
+        this.type = type;
+        this.reload();
+    }
+
+    reload() {
+        switch(this.type) {
+            case Sign.Types.EXIT:
+                this.sprite = new PIXI.Sprite.from("media/sign_arrowSign.png");
+                break;
+            case Sign.Types.SPEED:
+                this.sprite = new PIXI.Sprite.from("media/sign_speedLimit.png");
+            case Sign.Types.OVERHEAD:
+                this.sprite = new PIXI.Sprite.from("media/sign_upperSign.png");
+                break;
+            default: return;
+        }
+
+        this.sprite.anchor = { x: 0.5, y: 1 };
+    }
+
+    static Types = {
+        EXIT:       0,
+        SPEED:      1,
+        OVERHEAD:   2
+    }
+}
+
+class MileMarker extends RoadMarker {
+    constructor() {
+        super();
+        this.sprite = new PIXI.Sprite.from();
     }
 }

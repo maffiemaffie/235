@@ -5,7 +5,7 @@
  * to organize and expedite the flow of traffic"
  * so basically that
  */
-class GTC {
+ class GTC {
     static cars = [];
     static lanes = [];
     static roads = [];
@@ -126,7 +126,7 @@ class GTC {
      */
     static handoff(car) {
         car.tile.exit(car.instance.plate);
-        GTC._getTile(car.instance.road.id, car.instance.position)?.enter(car.instance.plate);
+        GTC._getTile(car.instance.road.id, car.instance.position).enter(car.instance.plate);
 
         const road = car.instance.road;
         const roadID = road.id;
